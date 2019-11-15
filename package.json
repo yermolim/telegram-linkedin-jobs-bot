@@ -1,28 +1,35 @@
 {
-  "name": "mynode",
+  "name": "jobs-bot",
   "version": "0.0.1",
-  "description": "study project",
+  "description": "telegram linkedin jobs bot",
   "main": "app.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "dev": "nodemon ./src/app.js"
+    "dev": "env-cmd -f ./config/dev.env nodemon ./src/index.js",
+    "start": "node src/index.js",
+    "test": ""
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/yermolim/my-nodejs-backend.git"
+    "url": "git@github.com:yermolim/telegram-linkedin-jobs-bot.git"
   },
   "author": "Volodymyr Yermolenko <yermolim@gmail.com> (https://github.com/yermolim)",
-  "license": "ISC",
+  "license": "ASL",
   "bugs": {
-    "url": "https://github.com/yermolim/my-nodejs-backend/issues"
+    "url": "https://github.com/yermolim/telegram-linkedin-jobs-bot/issues"
   },
-  "homepage": "https://github.com/yermolim/my-nodejs-backend#readme",
+  "homepage": "https://github.com/yermolim/telegram-linkedin-jobs-bot#readme",
   "dependencies": {
-    "express": "^4.17.1",
-    "request": "^2.88.0"
+    "chalk": "^3.0.0",
+    "cheerio": "^1.0.0-rc.3",
+    "dotenv": "^8.2.0",
+    "mongoose": "^5.7.11",
+    "nightmare": "^3.0.2",
+    "node-schedule": "^1.3.2",
+    "telegraf": "^3.33.3"
   },
   "devDependencies": {
-    "eslint": "^6.5.1",
+    "babel-eslint": "^10.0.3",
+    "eslint": "^6.6.0",
     "nodemon": "^1.19.4"
   }
 }

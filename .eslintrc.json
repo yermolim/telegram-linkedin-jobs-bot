@@ -4,6 +4,7 @@
         "es6": true,
         "node": true
     },
+    "parser": "babel-eslint",
     "extends": "eslint:recommended",
     "parserOptions": {
         "ecmaVersion": 2018,
@@ -12,7 +13,7 @@
     "rules": {
         "indent": [
             "warn",
-            2
+            4
         ],
         "linebreak-style": [
             "warn",
