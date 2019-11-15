@@ -5,7 +5,8 @@ if (process.env.NODE_ENV !== "production") {
 const schedule = require("node-schedule");
 const scraper = require("./scraper");
 
-const scheduledScraping = schedule.scheduleJob("37 * * * *", () => {
+// eslint-disable-next-line no-unused-vars
+const scheduledScraping = schedule.scheduleJob("42 * * * *", () => {
     new scraper().runUkraineLastWeek();
 });
 
