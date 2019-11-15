@@ -3,12 +3,15 @@ if (process.env.NODE_ENV !== "production") {
 }
 
 const schedule = require("node-schedule");
-const scraper = require("./scraper");
+const scraper = require("./scraper/scraper");
+const bot = require("./bot/bot");
 
 // eslint-disable-next-line no-unused-vars
-const scheduledScraping = schedule.scheduleJob("42 * * * *", () => {
-    new scraper().runUkraineLastWeek();
+const scheduledScraping = schedule.scheduleJob("59 * * * *", () => {
+    new scraper().runUkraine();
 });
 
-// new scraper().runWorldwideLastDay();
-// new scraper().runUkraineLastWeek();
+// new scraper().runWorldwide();
+// new scraper().runUkraine();
+
+bot.launch();

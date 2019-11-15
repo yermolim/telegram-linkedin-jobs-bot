@@ -1,22 +1,23 @@
 const cheerio = require("cheerio");
 const Nightmare = require("nightmare");
-const Job = require("./db/mongoose");
+const Job = require("../db/mongoose");
 const chalk = require("chalk");
 
 class LinkedInJobsScraper {
-    jobsWorldwideLastDayUrl = "https://www.linkedin.com/jobs/search?" +
-        "keywords=Remote&location=Worldwide&trk=guest_job_search_jobs-search-bar_search-submit&redirect=false&position=1&pageNum=0&f_TP=1";
-    jobsUkraineLastWeek = "https://www.linkedin.com/jobs/search?" + 
-        "keywords=Remote&location=Ukraine&trk=guest_job_search_jobs-search-bar_search-submit&redirect=false&position=1&pageNum=0&f_TP=1%2C2";
+    jobsUkraineUrl;
+    jobsWorldwideUrl;
 
-    constructor() { }
+    constructor() {
+        this.jobsUkraineUrl = process.env.LINKEDIN_UKRAINE_JOBS_URL;
+        this.jobsWorldwideUrl = process.env.LINKEDIN_WORLDWIDE_JOBS_URL;
+    }
     
-    runUkraineLastWeek() {
-        this.run(this.jobsUkraineLastWeek);
+    runUkraine() {
+        this.run(this.jobsUkraineUrl);
     }
         
-    runWorldwideLastDay() {
-        this.run(this.jobsWorldwideLastDayUrl);
+    runWorldwide() {
+        this.run(this.jobsWorldwideUrl);
     }
 
     async run(url) {        
