@@ -31,15 +31,17 @@ class LinkedInJobsScraper {
     }
 
     async getHtml(url) {
-        const nightmare = Nightmare({ show: true, 
+        const nightmare = Nightmare({ show: false, 
             webPreferences: {
                 images: false,
             }});
 
         await nightmare.goto(url).wait(4000);
       
-        while (await nightmare.exists("button.see-more-jobs")) {            
+        let counter = 0;
+        while (await nightmare.exists("button.see-more-jobs") && counter <= 40) {            
             await nightmare.click("button.see-more-jobs");
+            counter++;
             await nightmare.wait(4000);
         }
 
@@ -56,13 +58,22 @@ class LinkedInJobsScraper {
         let lis = $("ul.jobs-search__results-list li");
 
         return lis.map((i, li) => {
+            const url = $(li).find("a").attr("href");
+            const header = $(li).find("span.screen-reader-text").text();
+            const company = $(li).find("a.result-card__subtitle-link.job-result-card__subtitle-link").text();
+            const location = $(li).find("span.job-result-card__location").text();
+            const description = $(li).find("p.job-result-card__snippet").text();
+
+            let date = Date.parse($(li).find("time.job-result-card__listdate--new").attr("datetime"));
+            if (isNaN(date)) date = Date.parse($(li).find("time.job-result-card__listdate").attr("datetime"));
+
             return new Job({
-                url: $(li).find("a").attr("href"),   
-                header: $(li).find("span.screen-reader-text").text(),
-                company: $(li).find("a.result-card__subtitle-link.job-result-card__subtitle-link").text(),
-                location: $(li).find("span.job-result-card__location").text(),
-                description: $(li).find("p.job-result-card__snippet").text(),
-                date: Date.parse($(li).find("time.job-result-card__listdate").attr("datetime")),
+                url,   
+                header,
+                company,
+                location,
+                description,
+                date
             });
         }).filter((i, li) => {
             return !isNaN(li.date);

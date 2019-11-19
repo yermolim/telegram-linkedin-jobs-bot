@@ -7,7 +7,11 @@ const scraper = require("./scraper/scraper");
 const bot = require("./bot/bot");
 
 // eslint-disable-next-line no-unused-vars
-const scheduledScraping = schedule.scheduleJob("59 * * * *", () => {
+const scheduledWorldwideScraping = schedule.scheduleJob("14 * * * *", () => {
+    new scraper().runWorldwide();
+});
+// eslint-disable-next-line no-unused-vars
+const scheduledUkraineScraping = schedule.scheduleJob("28 * * * *", () => {
     new scraper().runUkraine();
 });
 
