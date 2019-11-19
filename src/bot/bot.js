@@ -12,13 +12,20 @@ bot.hears("hi", ctx => ctx.reply("Hey there"));
 
 bot.on("text", async ctx => {
     const request = ctx.message.text.split("/");
-    const requestType = request[0];
-    const requestValue = request[1];
-
+    let requestType = request[0];
+    let requestValue = request[1];
+    
+    if (requestType === undefined) {
+        ctx.reply("No request provided!");
+        return;
+    }
     if (requestValue === undefined) {
         ctx.reply("No request value provided!");
         return;
     }
+
+    requestType = requestType.trim();
+    requestValue = requestValue.trim();
 
     if (requestType === "location") {
         const jobs = await new BotJobProvider().getJobsByLocation(requestValue);
