@@ -25,7 +25,8 @@
     "mongoose": "^5.7.11",
     "nightmare": "^3.0.2",
     "node-schedule": "^1.3.2",
-    "telegraf": "^3.33.3"
+    "telegraf": "^3.33.3",
+    "telegraf-inline-menu": "^4.0.0"
   },
   "devDependencies": {
     "babel-eslint": "^10.0.3",

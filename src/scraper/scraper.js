@@ -4,20 +4,20 @@ const Job = require("../db/mongoose");
 const chalk = require("chalk");
 
 class LinkedInJobsScraper {
-    jobsUkraineUrl;
-    jobsWorldwideUrl;
+    _jobsUkraineUrl;
+    _jobsWorldwideUrl;
 
     constructor() {
-        this.jobsUkraineUrl = process.env.LINKEDIN_UKRAINE_JOBS_URL;
-        this.jobsWorldwideUrl = process.env.LINKEDIN_WORLDWIDE_JOBS_URL;
+        this._jobsUkraineUrl = process.env.LINKEDIN_UKRAINE_JOBS_URL;
+        this._jobsWorldwideUrl = process.env.LINKEDIN_WORLDWIDE_JOBS_URL;
     }
     
     runUkraine() {
-        this.run(this.jobsUkraineUrl);
+        this.run(this._jobsUkraineUrl);
     }
         
     runWorldwide() {
-        this.run(this.jobsWorldwideUrl);
+        this.run(this._jobsWorldwideUrl);
     }
 
     async run(url) {        
