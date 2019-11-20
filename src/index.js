@@ -5,17 +5,18 @@ if (process.env.NODE_ENV !== "production") {
 const schedule = require("node-schedule");
 const scraper = require("./scraper/scraper");
 const bot = require("./bot/bot");
+const app = require("./app");
 
 // eslint-disable-next-line no-unused-vars
-const scheduledWorldwideScraping = schedule.scheduleJob("10 * * * *", () => {
+const scheduledWorldwideScraping = schedule.scheduleJob("01 * * * *", () => {
     new scraper().runWorldwide();
 });
 // eslint-disable-next-line no-unused-vars
-const scheduledUkraineScraping = schedule.scheduleJob("20 * * * *", () => {
+const scheduledUkraineScraping = schedule.scheduleJob("11 * * * *", () => {
     new scraper().runUkraine();
 });
 
-// new scraper().runWorldwide();
-// new scraper().runUkraine();
-
 bot.launch();
+
+//dummy app to prevent heroku from shutting down webapp
+app.listen(process.env.PORT);
