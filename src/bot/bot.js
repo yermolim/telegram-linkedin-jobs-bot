@@ -1,110 +1,106 @@
 const Telegraf = require("telegraf");
-const TelegrafInlineMenu = require("telegraf-inline-menu");
+const Markup = require("telegraf/markup");
+const Stage = require("telegraf/stage");
+const WizardScene = require("telegraf/scenes/wizard");
+const session = require("telegraf/session");
+
 const BotJobProvider = require("./bot-job-provider");
 
 const bot = new Telegraf(process.env.TELEGRAM_BOT_TOKEN);
-bot.start(ctx => ctx.reply("Welcome! Type '/help' to get commands list."));
-bot.help(ctx => ctx.reply("- '/menu' to open search menu with some default search options\n\n" + 
-    "- 'location/*' to find some job offers in specified location (examples: 'location/ua' or 'location/dnipro')\n\n" + 
-    "- 'header/*' to find some job offers by searching provided keyword in offer headers (examples: 'header/senior' or 'header/react')\n\n" + 
-    "- 'company/*' to find some job offers by searching provided keyword in company names (examples: 'company/apple' or 'company/linkedin')\n\n"));    
-
-bot.on("sticker", ctx => ctx.reply("👍"));
-bot.hears("hi", ctx => ctx.reply("Hey there"));
-
-const searchMenu = new TelegrafInlineMenu("Search menu");
-const locationSubmenu = new TelegrafInlineMenu("Select location to search for");
-const headerSubmenu = new TelegrafInlineMenu("Select header to search for");
-
-searchMenu.submenu("Search by location", "openLocationSubmenu", locationSubmenu);
-searchMenu.submenu("Search by header", "openHeaderSubmenu", headerSubmenu);
-
-//#region menu buttons
-
-locationSubmenu.simpleButton("UA", "searchUA", {
-    doFunc: ctx => sendJobsByLocation(ctx, "UA"),
-    setParentMenuAfter: true
-});
-locationSubmenu.simpleButton("US", "searchUS", {
-    doFunc: ctx => sendJobsByLocation(ctx, "US"),
-    setParentMenuAfter: true
-});
-locationSubmenu.simpleButton("Kyiv", "searchKyiv", {
-    doFunc: ctx => sendJobsByLocation(ctx, "Kyiv"),
-    setParentMenuAfter: true
+bot.start(ctx => {
+    ctx.reply("Welcome! You can use this bot to find most recent remote job offers from all over the world.\n" 
+    + "All offers are scraped from public LinkedIn job search.\n\n"
+    + "Type '/help' to get commands list\nor just use buttons below to find job offers:\n"
+    + "'/location' button for searching by location\n'/title' button for searching by title", 
+    Markup.keyboard([
+        ["/location", "/title"], 
+        ["/help"] 
+    ]).resize().extra());
 });
 
-headerSubmenu.simpleButton(".NET", "searchNET", {
-    doFunc: ctx => sendJobsByHeader(ctx, ".NET"),
-    setParentMenuAfter: true
-});
-headerSubmenu.simpleButton("JavaScript", "searchJavaScript", {
-    doFunc: ctx => sendJobsByHeader(ctx, "JavaScript"),
-    setParentMenuAfter: true
-});
-headerSubmenu.simpleButton("Python", "searchPython", {
-    doFunc: ctx => sendJobsByHeader(ctx, "Python"),
-    setParentMenuAfter: true
-});
-headerSubmenu.simpleButton("C++", "searchC", {
-    doFunc: ctx => sendJobsByHeader(ctx, "C++"),
-    setParentMenuAfter: true
-});
-headerSubmenu.simpleButton("Web", "searchWeb", {
-    doFunc: ctx => sendJobsByHeader(ctx, "Web"),
-    setParentMenuAfter: true
-});
-headerSubmenu.simpleButton("Fullstack", "searchFull", {
-    doFunc: ctx => sendJobsByHeader(ctx, "Full"),
-    setParentMenuAfter: true
-});
-headerSubmenu.simpleButton("Backend", "searchBack", {
-    doFunc: ctx => sendJobsByHeader(ctx, "Back"),
-    setParentMenuAfter: true
-});
-headerSubmenu.simpleButton("Node", "searchNode", {
-    doFunc: ctx => sendJobsByHeader(ctx, "Node"),
-    setParentMenuAfter: true
-});
-headerSubmenu.simpleButton("Frontend", "searchFront", {
-    doFunc: ctx => sendJobsByHeader(ctx, "Front"),
-    setParentMenuAfter: true
-});
-headerSubmenu.simpleButton("Angular", "searchAngular", {
-    doFunc: ctx => sendJobsByHeader(ctx, "Angular"),
-    setParentMenuAfter: true
-});
-headerSubmenu.simpleButton("React", "searchReact", {
-    doFunc: ctx => sendJobsByHeader(ctx, "React"),
-    setParentMenuAfter: true
-});
-headerSubmenu.simpleButton("Vue", "searchVue", {
-    doFunc: ctx => sendJobsByHeader(ctx, "Vue"),
-    setParentMenuAfter: true
-});
-headerSubmenu.simpleButton("QA", "searchQA", {
-    doFunc: ctx => sendJobsByHeader(ctx, "QA"),
-    setParentMenuAfter: true
-});
-headerSubmenu.simpleButton("Senior", "searchSenior", {
-    doFunc: ctx => sendJobsByHeader(ctx, "Senior"),
-    setParentMenuAfter: true
-});
-headerSubmenu.simpleButton("Middle", "searchMiddle", {
-    doFunc: ctx => sendJobsByHeader(ctx, "Middle"),
-    setParentMenuAfter: true
-});
-headerSubmenu.simpleButton("Junior", "searchJunior", {
-    doFunc: ctx => sendJobsByHeader(ctx, "Junior"),
-    setParentMenuAfter: true
+const locationScene = new WizardScene("locationWizard", async ctx => {
+    await ctx.reply("Enter location to search jobs from:");
+    return ctx.wizard.next();
+},
+async ctx => {
+    const text = ctx.message.text;
+    await sendJobsByLocation(ctx, text);
+    return ctx.scene.leave();
 });
 
-//#endregion menu buttons
+const titleScene = new WizardScene("titleWizard", async ctx => {
+    await ctx.reply("Enter title to search jobs with:");
+    return ctx.wizard.next();
+},
+async ctx => {
+    const text = ctx.message.text;
+    await sendJobsByHeader(ctx, text);
+    return ctx.scene.leave();
+});
 
-searchMenu.setCommand("menu");
-bot.use(searchMenu.init({
-    mainMenuButtonText: "Return to search menu"
-}));
+const stage = new Stage();
+stage.register(locationScene);
+stage.register(titleScene);
+bot.use(session());
+bot.use(stage.middleware());
+
+bot.command("location", ctx => {
+    ctx.reply("Select location to search:", 
+        Markup.inlineKeyboard([
+            [Markup.callbackButton("Enter location", "locationCustom")],
+            [Markup.callbackButton("UA", "locationUA"), Markup.callbackButton("US", "locationUS")],            
+            [Markup.callbackButton("Kyiv", "locationKyiv"), Markup.callbackButton("NY", "locationNY")],            
+        ]).extra());
+});
+
+bot.command("title", ctx => {
+    ctx.reply("Select search criteria:", 
+        Markup.inlineKeyboard([
+            [Markup.callbackButton("Enter title", "titleCustom")],
+            [Markup.callbackButton("Desktop", "titleDesktop"), Markup.callbackButton("Web", "titleWeb")],
+            [Markup.callbackButton("Frontend", "titleFe"), Markup.callbackButton("Backend", "titleBe")],
+            [Markup.callbackButton("Fullstack", "titleFs"), Markup.callbackButton("API", "titleApi")],
+            [Markup.callbackButton("C++", "titleC"), Markup.callbackButton(".NET", "titleNet")],            
+            [Markup.callbackButton("Javascript", "titleJs"), Markup.callbackButton("Python", "titlePython")],            
+            [Markup.callbackButton("Java", "titleJava"), Markup.callbackButton("PHP", "titlePhp")],            
+            [Markup.callbackButton("Node.js", "titleNode"), Markup.callbackButton("Angular", "titleAngular")],            
+            [Markup.callbackButton("React", "titleReact"), Markup.callbackButton("Vue", "titleVue")],            
+        ]).extra());
+});
+
+bot.action("locationCustom", async ctx => ctx.scene.enter("locationWizard"));
+bot.action("locationUA", ctx => sendJobsByLocation(ctx, "UA"));
+bot.action("locationUS", ctx => sendJobsByLocation(ctx, "US"));
+bot.action("locationKyiv", ctx => sendJobsByLocation(ctx, "Kyiv"));
+bot.action("locationNY", ctx => sendJobsByLocation(ctx, "NY"));
+
+bot.action("titleCustom", async ctx => ctx.scene.enter("titleWizard"));
+bot.action("titleDesktop", ctx => sendJobsByHeader(ctx, "desktop"));
+bot.action("titleWeb", ctx => sendJobsByHeader(ctx, "web"));
+bot.action("titleFe", ctx => sendJobsByHeader(ctx, "front"));
+bot.action("titleBe", ctx => sendJobsByHeader(ctx, "back"));
+bot.action("titleFs", ctx => sendJobsByHeader(ctx, "full"));
+bot.action("titleApi", ctx => sendJobsByHeader(ctx, "api"));
+bot.action("titleC", ctx => sendJobsByHeader(ctx, "C++"));
+bot.action("titleNet", ctx => sendJobsByHeader(ctx, ".net"));
+bot.action("titleJs", ctx => sendJobsByHeader(ctx, "javascript"));
+bot.action("titlePython", ctx => sendJobsByHeader(ctx, "python"));
+bot.action("titleJava", ctx => sendJobsByHeader(ctx, "java"));
+bot.action("titlePhp", ctx => sendJobsByHeader(ctx, "php"));
+bot.action("titleNode", ctx => sendJobsByHeader(ctx, "node"));
+bot.action("titleAngular", ctx => sendJobsByHeader(ctx, "angular"));
+bot.action("titleReact", ctx => sendJobsByHeader(ctx, "react"));
+bot.action("titleVue", ctx => sendJobsByHeader(ctx, "vue"));
+
+bot.help(ctx => ctx.reply(
+    "- '/help' command to show this info 😎\n\n" +
+    "- '/start' command to reinitialize buttons\n\n" +
+    "- '/location' button or command for searching by location\n\n" + 
+    "- '/title' button or command for searching by title\n\n" +
+    "- 'location/*' command to find some job offers in specified location (examples: 'location/ua' or 'location/dnipro')\n\n" + 
+    "- 'title/*' command to find some job offers by searching provided keyword in offer headers (examples: 'header/senior' or 'header/react')\n\n" + 
+    "- 'company/*' command to find some job offers by searching provided keyword in company names (examples: 'company/apple' or 'company/linkedin')\n\n"
+));   
 
 bot.on("text", async ctx => {
     const request = ctx.message.text.split("/");
@@ -125,7 +121,7 @@ bot.on("text", async ctx => {
 
     if (requestType === "location") sendJobsByLocation(ctx, requestValue);
     else if (requestType === "company") sendJobsByCompany(ctx, requestValue);
-    else if (requestType === "header") sendJobsByHeader(ctx, requestValue);
+    else if (requestType === "title") sendJobsByHeader(ctx, requestValue);
     else ctx.reply("Unknown request!");
 });
 
